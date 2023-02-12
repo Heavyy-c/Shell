@@ -1,48 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "string_handler.h"
+#include "words.h"
+#include "input.h"
+#include "input_handler.h"
 
-enum read_states { RSTATE_EOF, RSTATE_GOT_STR };
-#define SHELL_SYMBOL "->>"
-#define UNMACH_QUOTES_ERR "UNMATCHED QUOTES, ERR\n"
+enum read_states { STR_EOS = '\0', CHAR_EOL = '\n' };
+#define SHELL_STR "->> "
+#define UNMATCHED_QUOTES_ERR "UNMATCHED QUOTES, ERR\n"
 
-void print_words(struct word_item *words)
+void print_words(struct word_list list)
 {
-	for(; words; words = words->next)
+	struct word_item *current = list.first;
+	for(; current; current = current->next)
 	{
 		printf("[");
-		printf(words->word);
+		printf(current->word);
 		printf("]\n");
 	}
 }
 
 int main()
 {
-	struct input_item *input_list;
-	struct word_item *words;
-	int is_eof;
-	char *string;
-	input_list_init(&input_list);
+	struct input_list input_l;
+	struct word_list word_l;
+	char *string = NULL;
+
+	input_list_init(&input_l);
+	word_list_init(&word_l);
+
 	while(1)
 	{
-		printf(SHELL_SYMBOL);
+		printf(SHELL_STR);
 		fflush(stdout);
-		is_eof = input_read(&input_list);
-		if(is_eof)
+
+		input_list_read(&input_l);
+		input_assemble(input_l, &string);
+		input_list_free(&input_l);
+
+		if(*string == STR_EOS) /* || NULL */
 			break;
-		string = input_make_string(input_list);
-		if(!input_correct(string))
+		if(!handler_input_correct(string))
 		{
-			printf(UNMACH_QUOTES_ERR);
+			printf(UNMATCHED_QUOTES_ERR);
+			input_string_free(&string);
 			continue;
 		}
-		input_split_string(&words, string);
+		handler_split_string(string, &word_l);
+		
+		print_words(word_l);
 
-		print_words(words);
-
-		free(string);
-		input_list_free(input_list);
-		input_words_free(words);
+		input_string_free(&string);
+		word_list_free(&word_l);
 	}
 	return 0;
 }
