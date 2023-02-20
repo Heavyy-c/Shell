@@ -29,6 +29,7 @@ static int is_separator(char c)
 	{
 		case CHAR_TABULATION:
 		case CHAR_SPACE:
+		case CHAR_EOL:
 			return 1;
 		default:
 			return 0;
@@ -74,7 +75,7 @@ static int first_char_pos(const char *string)
 static int get_word_symbols(const char *string, struct symbol_list *symbols)
 {
 	char last = ' ';
-	int len;
+	int len = 0;
 	int reading_quote = 0;
 	for(len = 0; string && *string; last = *string, string++, len++)
 	{
@@ -87,12 +88,15 @@ static int get_word_symbols(const char *string, struct symbol_list *symbols)
 			break;
 		if(is_quote(*string))
 		{
+			symbol_list_set_quoted(symbols);
 			reading_quote = !reading_quote;
 			continue;
 		}
-		if((reading_quote || is_text(*string)) &&
+		if((reading_quote || !is_separator(*string)) &&
 					!is_backslash(*string))
+		{
 			symbol_list_append(symbols, *string);
+		}
 	}
 	return len;
 }
@@ -105,7 +109,10 @@ static int cut_word(char **string, char **result)
 	if(start == -1)
 		return 0;
 	(*string) += start;
-	(*string) += get_word_symbols(*string, &symbols);
+	int pos = get_word_symbols(*string, &symbols);
+	if(!pos)
+		return 0;
+	*string += pos;
 	symbol_list_assemble(symbols, result);
 	symbol_list_free(&symbols);
 	return 1;

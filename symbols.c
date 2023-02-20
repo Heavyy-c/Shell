@@ -11,6 +11,12 @@ void symbol_list_init(struct symbol_list *list)
 	list->first = NULL;
 	list->last = NULL;
 	list->len = 0;
+	list->quoted = 0;
+}
+
+void symbol_list_set_quoted(struct symbol_list *list)
+{
+	list->quoted = 1;
 }
 
 void symbol_list_append(struct symbol_list *list, char c)
@@ -28,15 +34,23 @@ void symbol_list_append(struct symbol_list *list, char c)
 
 void symbol_list_assemble(struct symbol_list list, char **result)
 {
-	if(list.len == 0)
+	if(list.quoted)
+		list.len += 2;
+
+	else if(list.len == 0)
 		return;
 	struct symbol_item *current = list.first;
 	char *res = malloc(sizeof(char) * (list.len + 1));
-	for(int i = 0; current; current = current->next, i++)
+	for(int i = list.quoted; current; current = current->next, i++)
 	{
 		*(res+i) = current->c;
 	}
 	res[list.len] = '\0';
+	if(list.quoted)
+	{
+		res[0] = '"';
+		res[list.len-1] = '"';
+	}
 	*result = res;
 }
 

@@ -14,5 +14,8 @@ void word_list_init(struct word_list *list);
 void word_list_append(struct word_list *list, char *word);
 void word_list_free(struct word_list *list);
 
+void word_list_pop(struct word_list *list, void *target, char **dest);
+int word_list_empty(struct word_list list);
+int word_list_count(struct word_list list);
 
 #endif

@@ -42,15 +42,19 @@ int main()
 		if(!handler_input_correct(string))
 		{
 			printf(UNMATCHED_QUOTES_ERR);
-			input_string_free(&string);
-			continue;
+			goto memory_free;
 		}
 		handler_split_string(string, &word_l);
-		
+		command_assemble_commands(word_l, &commands);
+		command_execute(commands);
+
 		print_words(word_l);
 
+memory_free:
+		input_list_free(&input_l);
 		input_string_free(&string);
 		word_list_free(&word_l);
+		command_list_free(&commands);
 	}
 	return 0;
 }

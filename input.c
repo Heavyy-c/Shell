@@ -90,7 +90,8 @@ void input_assemble(struct input_list list, char **result)
 
 void input_string_free(char **result)
 {
-	free(*result);
+	if(*result)
+		free(*result);
 	*result = NULL;
 }
 

@@ -3,10 +3,11 @@
 
 struct symbol_list {
 	struct symbol_item *first, *last;
-	int len;
+	int len, quoted;
 };
 
 void symbol_list_init(struct symbol_list *list);
+void symbol_list_set_quoted(struct symbol_list *list);
 void symbol_list_append(struct symbol_list *list, char c);
 void symbol_list_assemble(struct symbol_list list, char **result);
 void symbol_list_free(struct symbol_list *list);
